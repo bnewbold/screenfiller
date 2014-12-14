@@ -1,0 +1,23 @@
+# Don't ignore this file itself
+!.gitignore
+
+*.o
+*.a
+*.pyc
+*~
+*.swp
+.*
+*.tmp
+*.old
+*.profile
+*.bkp
+*.bak
+[Tt]humbs.db
+*.DS_Store
+build/
+_build/
+*.log
+
+*.mkv
+*.avi
+*.png
