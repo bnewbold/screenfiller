@@ -28,6 +28,8 @@ import numpy as np
 
 from curves import *
 
+raw = None
+
 def current_ram_usage():
     """Returns current megabytes of ram this process is using"""
     usage = resource.getrusage(resource.RUSAGE_SELF)
@@ -50,14 +52,17 @@ def load_video(args):
         (len(v), (datetime.datetime.now() - start).total_seconds(), current_ram_usage()))
     return v
 
-def fill_frames(args):
+def fill_frames(args, start=0):
 
-    raw = load_video(args)
+    global raw
+
+    if raw is None:
+        raw = load_video(args)
 
     if args.frame_limit:
-        output_frames = args.frame_limit
+        output_frames = min(args.frame_limit, len(raw) - start)
     else:
-        output_frames = len(raw)
+        output_frames = len(raw) - start
 
     thumb_height = args.height
     thumb_width = len(raw[0][0])
@@ -76,17 +81,20 @@ def fill_frames(args):
         x, y = d2xy(output_width, int(percent * (output_width**2 -1)))
         return x, int(y * output_ratio)
 
+    print()
     print("Processing video frames:")
-    for frame in range(output_frames):
+    for frame in range(start, start+output_frames):
         sys.stdout.write("\b" * 50)
-        sys.stdout.write("frame: %d/%d" % (frame, output_frames-1))
+        sys.stdout.write("processing frame: %d/%d" % (frame, output_frames-1))
         for d in range(args.grid_edge**2):
             percent = 1.0 * d/(args.grid_edge**2)
             x, y = percent2xy(percent)
             x -= x % thumb_width
             y -= y % thumb_height
             insert_thumb(raw[(percent * len(raw) + frame) % len(raw)],
-                   x, y, frame, vo)
+                   x, y, frame-start, vo)
+
+    print()
     return vo
 
 def do_video(args):
@@ -98,24 +106,35 @@ def do_video(args):
     else:
         output_fname = "%s_filled.mp4" % args.inputvideofile
 
-    frames = fill_frames(args)
-
     if args.np2video:
+        frames = fill_frames(args)
         print("Now running numm.np2video to create video file (could be huge)")
         numm.np2video(frames, output_fname)
         return
 
     work_dir = tempfile.mkdtemp(suffix="_screenfiller_frames")
 
-    print("Saving frames as .png files...")
-    # TODO: why did I add "-1" here?
-    for fnum in range(len(frames)-1):
-        sys.stdout.write("\b" * 50)
-        sys.stdout.write("frame: %d/%d" % (fnum, len(frames)-1))
-        numm.np2image(frames[fnum], "%s/%d.png" % (work_dir, fnum))
+    print("Saving frames as .png files in batches of 100")
+
+    global raw
+    raw = load_video(args)
+
+    if args.frame_limit:
+        args.output_frames = args.frame_limit
+    else:
+        args.output_frames = len(raw)
+
+    for coarse in range(0, args.output_frames, 100):
+        args.frame_limit = 100
+        frames = fill_frames(args, start=coarse)
+        for fnum in range(coarse, coarse+len(frames)):
+            sys.stdout.write("\b" * 50)
+            sys.stdout.write("saving frame: %d/%d" % (fnum, args.output_frames-1))
+            numm.np2image(frames[fnum-coarse], "%s/%d.png" % (work_dir, fnum))
+
     print()
     print("Now running ffmpeg to create video file")
-    os.system("ffmpeg -framerate 30 -i %s/%%d.png -r 30 -pix_fmt yuv420p %s" % (work_dir, output_fname))
+    os.system("ffmpeg -framerate 30 -i %s/%%d.png -r 30 -pix_fmt yuv420p -y %s" % (work_dir, output_fname))
 
     print("Cleaning up...")
     shutil.rmtree(work_dir)
