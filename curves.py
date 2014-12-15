@@ -3,7 +3,7 @@
 ########################################
 # These functions refactored from those available at 
 # wikipedia for Hilbert curves http://en.wikipedia.org/wiki/Hilbert_curve
-def d2xy_hilber(n, d):
+def d2xy_hilbert(n, d):
     """
     take a d value in [0, n**2 - 1] and map it to
     an x, y value (e.g. c, r).
