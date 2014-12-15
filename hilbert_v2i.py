@@ -76,7 +76,7 @@ if not ('v' in dir()) and not ('v' in globals()):
     # we haven't loaded video yet
     print("Loading... (%d MB used)" % current_ram_usage())
     start = datetime.datetime.now()
-    v = numm.video2np('../tmp/Johnny_Cash_Hurt.mp4')
+    v = numm.video2np('Johnny_Cash_Hurt.mp4')
     print("Done: got %d frames, took %d seconds, %d MB of RAM in use" %
         (len(v), (datetime.datetime.now() - start).total_seconds(), current_ram_usage()))
 

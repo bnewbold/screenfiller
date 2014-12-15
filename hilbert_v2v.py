@@ -1,11 +1,14 @@
 
 import datetime
 import resource
-import numm
 import numpy as np
+
+#import numm3 as numm
+import numm
 
 
 ########################################
+# https://github.com/dentearl/simpleHilbertCurve
 # These functions refactored from those available at 
 # wikipedia for Hilbert curves http://en.wikipedia.org/wiki/Hilbert_curve
 def d2xy(n, d):
@@ -122,7 +125,7 @@ def insert(frame, thumb, percent):
         vo[frame][y+row][x:x+THUMBW] = thumb[row][:]
 
 for frame in range(OUTPUT_FRAMES):
-    print(frame)
+    print("frame: %d/%d" % (frame, OUTPUT_FRAMES))
     for d in range(GRIDS**2):
         percent = 1.0 * d/(GRIDS**2)
         #print(percent)
@@ -130,14 +133,12 @@ for frame in range(OUTPUT_FRAMES):
         insert(frame, v[(percent * len(v) + frame) % len(v)], percent)
 
 for fnum in range(len(v)-1):
-    print(fnum)
+    print("frame: %d/%d" % (fnum, len(v)-1))
     numm.np2image(vo[fnum], "frames/%d.png" % fnum)
+
 #numm.np2video(vo, 'hilbert_johny_out.mkv')
 #numm.np2image(vo[3], 'hilbert_johny_out.png')
 #numm.np2image(i, 'hilbert_johny_out.png')
-
-#image2np(path)
-#np2image(np, path)
 
 """
 ffmpeg -framerate 30 -i frames/%d.png -r 30 -pix_fmt yuv420p out.mp4
