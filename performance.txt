@@ -1,0 +1,13 @@
+
+this is all on:
+    Intel(R) Core(TM) i5-3320M CPU @ 2.60GHz (2 cores? 4 with h-t?)
+    8GB RAM
+    linux debian wheezy
+
+hilbert_v2v.py with numm1, to png, johnny_64.avi, 500 frames:
+    ~520MB of RAM used loading video
+    real    5m7.664s
+    user    5m0.892s
+    sys     0m5.036s
+
+hilbert_v2v.py with numm3, to png, johnny_64.avi, 500 frames:
